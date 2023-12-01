@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/chroblert/jasync"
+	"github.com/chroblert/jlog"
 	"github.com/chroblert/jprogress"
 	"time"
 )
@@ -11,7 +12,7 @@ func main() {
 	jprogress.Start()
 
 	//var wg sync.WaitGroup
-
+	jlog.Info("kkkkktest")
 	bar1 := jprogress.AddDefaultBar(20, "1")
 	bar2 := jprogress.AddDefaultBar(40, "2")
 	bar3 := jprogress.AddDefaultBar(3000, "3")

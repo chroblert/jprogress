@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	jtime "github.com/chroblert/jprogress/util/time"
 	"sync"
 	"time"
 
@@ -173,6 +172,30 @@ func (b *Bar) PrependSlashNum() *Bar {
 	return b
 }
 
+// AppendSlashNum append <processed num>/<total> to the progress bar
+func (b *Bar) AppendSlashNum() *Bar {
+	b.AppendFunc(func(b *Bar) string {
+		return strutil.PadLeft(fmt.Sprintf("%d/%d", b.Current(), b.Total), 10, ' ')
+	})
+	return b
+}
+
+// AppendStr append str to the progress bar
+func (b *Bar) AppendStr(str string) *Bar {
+	b.AppendFunc(func(b *Bar) string {
+		return str
+	})
+	return b
+}
+
+// PrependStr prepends str to the progress bar
+func (b *Bar) PrependStr(str string) *Bar {
+	b.AppendFunc(func(b *Bar) string {
+		return str
+	})
+	return b
+}
+
 // PrependDesc prepends <processed num>/<total> to the progress bar
 func (b *Bar) PrependDesc(description string) *Bar {
 	b.PrependFunc(func(b *Bar) string {
@@ -186,8 +209,7 @@ func (b *Bar) AppendETA() *Bar {
 	b.AppendFunc(func(b *Bar) string {
 		elapsedSeconds := b.TimeElapsed().Seconds()
 		etaSeconds := elapsedSeconds/(float64(b.Current())/float64(b.Total)) - elapsedSeconds
-		day, hour, minute, second := jtime.ResolveTime(int64(etaSeconds))
-		return fmt.Sprintf("ETA:%dD %2dH%2dM%2dS", day, hour, minute, second)
+		return strutil.PrettyTime(time.Duration(etaSeconds) * time.Second)
 	})
 	return b
 }

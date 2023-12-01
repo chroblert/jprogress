@@ -126,9 +126,9 @@ func (p *Progress) AddDefaultBar(total int, description ...string) *Bar {
 	bar := NewBar(total)
 	bar.Width = p.Width
 	if len(description) > 0 {
-		bar.AppendCompleted().AppendETA().PrependElapsed().PrependSlashNum().PrependDesc(description[0])
+		bar.PrependCompleted().PrependDesc(description[0]).AppendStr("(").AppendSlashNum().AppendElapsed().AppendStr(":").AppendETA().AppendStr(")")
 	} else {
-		bar.AppendCompleted().AppendETA().PrependElapsed().PrependSlashNum()
+		bar.PrependCompleted().PrependDesc(description[0]).AppendStr("(").AppendSlashNum().AppendElapsed().AppendStr(":").AppendETA().AppendStr(")")
 	}
 	p.Bars = append(p.Bars, bar)
 	return bar
