@@ -12,9 +12,9 @@ func main() {
 
 	//var wg sync.WaitGroup
 
-	bar1 := jprogress.AddBar(20).AppendCompleted().PrependElapsed()
-	bar2 := jprogress.AddBar(40).AppendCompleted().PrependElapsed()
-	bar3 := jprogress.AddBar(3000).AppendCompleted().PrependSlashNum().PrependDesc("Test").AppendETA()
+	bar1 := jprogress.AddDefaultBar(20, "1")
+	bar2 := jprogress.AddDefaultBar(40, "2")
+	bar3 := jprogress.AddDefaultBar(3000, "3")
 
 	//wg.Add(1)
 	a := jasync.NewAR(3)
@@ -27,13 +27,22 @@ func main() {
 	a.Init("2").CAdd(func(bar *jprogress.Bar) {
 		for i := 0; i < bar.Total; i++ {
 			time.Sleep(waitTime)
-			bar.Incr()
+			if !bar.Incr() {
+			}
+			jprogress.RemoveBarOnComplete(bar)
+		}
+		if !bar.Incr() {
+			//jlog.Info("删除bar2")
+			//jprogress.RemoveBar(bar)
 		}
 	}, bar2).CDO()
 	a.Init("3").CAdd(func(bar *jprogress.Bar) {
 		for i := 0; i < bar.Total; i++ {
 			time.Sleep(waitTime)
-			bar.Incr()
+			if !bar.Incr() {
+				//jlog.Info("删除bar3")
+				//jprogress.RemoveBar(bar)
+			}
 		}
 	}, bar3).CDO()
 	a.Wait()

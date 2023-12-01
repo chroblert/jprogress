@@ -60,6 +60,24 @@ func New() *Progress {
 func AddBar(total int) *Bar {
 	return defaultProgress.AddBar(total)
 }
+func AddDefaultBar(total int, description ...string) *Bar {
+	return defaultProgress.AddDefaultBar(total, description...)
+}
+
+// RemoveBar remove bar from progress
+func RemoveBar(bar *Bar) error {
+	return defaultProgress.RemoveBar(bar)
+}
+
+// RemoveBarOnComplete remove bar from progress when complete
+func RemoveBarOnComplete(bar *Bar) error {
+	return defaultProgress.RemoveBarOnComplete(bar)
+	//if bar.IsComplete() {
+	//	return defaultProgress.RemoveBar(bar)
+	//} else {
+	//	return nil
+	//}
+}
 
 // Start starts the rendering the progress of progress bars using the DefaultProgress. It listens for updates using `bar.Set(n)` and new bars when added using `AddBar`
 func Start() {
@@ -101,6 +119,21 @@ func (p *Progress) AddBar(total int) *Bar {
 	return bar
 }
 
+// AddBar creates a new progress bar and adds to the container
+func (p *Progress) AddDefaultBar(total int, description ...string) *Bar {
+	p.mtx.Lock()
+	defer p.mtx.Unlock()
+	bar := NewBar(total)
+	bar.Width = p.Width
+	if len(description) > 0 {
+		bar.AppendCompleted().AppendETA().PrependElapsed().PrependSlashNum().PrependDesc(description[0])
+	} else {
+		bar.AppendCompleted().AppendETA().PrependElapsed().PrependSlashNum()
+	}
+	p.Bars = append(p.Bars, bar)
+	return bar
+}
+
 // Listen listens for updates and renders the progress bars
 func (p *Progress) Listen() {
 	for {
@@ -123,9 +156,20 @@ func (p *Progress) Listen() {
 func (p *Progress) print() {
 	p.mtx.Lock()
 	defer p.mtx.Unlock()
+	//dDel := -1
 	for _, bar := range p.Bars {
 		fmt.Fprintln(p.lw, bar.String())
+		//if bar.current == bar.Total {
+		//	dDel = k
+		//}
 	}
+	//if dDel > -1 {
+	//	if len(p.Bars) > dDel+1 {
+	//		p.Bars = append(p.Bars[:dDel], p.Bars[dDel+1:]...)
+	//	} else {
+	//		p.Bars = p.Bars[:dDel]
+	//	}
+	//}
 	p.lw.Flush()
 }
 
@@ -143,4 +187,36 @@ func (p *Progress) Stop() {
 // Bypass returns a writer which allows non-buffered data to be written to the underlying output
 func (p *Progress) Bypass() io.Writer {
 	return p.lw.Bypass()
+}
+
+func (p *Progress) RemoveBar(bar *Bar) error {
+	p.mtx.Lock()
+	defer p.mtx.Unlock()
+	dDel := -1
+	for k, b := range p.Bars {
+		if b == bar {
+			dDel = k
+			break
+		}
+	}
+	if dDel > -1 {
+		if len(p.Bars) > dDel+1 {
+			p.Bars = append(p.Bars[:dDel], p.Bars[dDel+1:]...)
+		} else {
+			p.Bars = p.Bars[:dDel]
+		}
+	}
+	return nil
+}
+
+// RemoveBarOnComplete remove bar from progress when complete
+func (p *Progress) RemoveBarOnComplete(bar *Bar) error {
+	if bar == nil {
+		return fmt.Errorf("bar not exist")
+	}
+	if bar.IsComplete() {
+		return defaultProgress.RemoveBar(bar)
+	} else {
+		return nil
+	}
 }

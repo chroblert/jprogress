@@ -185,8 +185,7 @@ func (b *Bar) PrependDesc(description string) *Bar {
 func (b *Bar) AppendETA() *Bar {
 	b.AppendFunc(func(b *Bar) string {
 		elapsedSeconds := b.TimeElapsed().Seconds()
-		//percent := float64(b.Current()) / float64(b.Total)
-		etaSeconds := elapsedSeconds/b.CompletedPercent() - elapsedSeconds
+		etaSeconds := elapsedSeconds/(float64(b.Current())/float64(b.Total)) - elapsedSeconds
 		day, hour, minute, second := jtime.ResolveTime(int64(etaSeconds))
 		return fmt.Sprintf("ETA:%dD %2dH%2dM%2dS", day, hour, minute, second)
 	})
@@ -246,6 +245,11 @@ func (b *Bar) String() string {
 // CompletedPercent return the percent completed
 func (b *Bar) CompletedPercent() float64 {
 	return (float64(b.Current()) / float64(b.Total)) * 100.00
+}
+
+// CompletedPercent return the percent completed
+func (b *Bar) IsComplete() bool {
+	return b.Current() == b.Total
 }
 
 // CompletedPercentString returns the formatted string representation of the completed percent
