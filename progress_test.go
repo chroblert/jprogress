@@ -1,4 +1,4 @@
-package uiprogress
+package jprogress
 
 import (
 	"bytes"

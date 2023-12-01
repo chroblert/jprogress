@@ -1,13 +1,14 @@
-package uiprogress
+package jprogress
 
 import (
 	"bytes"
 	"errors"
 	"fmt"
+	jtime "github.com/chroblert/jprogress/util/time"
 	"sync"
 	"time"
 
-	"github.com/gosuri/uiprogress/util/strutil"
+	"github.com/chroblert/jprogress/util/strutil"
 )
 
 var (
@@ -160,6 +161,34 @@ func (b *Bar) PrependFunc(f DecoratorFunc) *Bar {
 func (b *Bar) PrependCompleted() *Bar {
 	b.PrependFunc(func(b *Bar) string {
 		return b.CompletedPercentString()
+	})
+	return b
+}
+
+// PrependSlashNum prepends <processed num>/<total> to the progress bar
+func (b *Bar) PrependSlashNum() *Bar {
+	b.PrependFunc(func(b *Bar) string {
+		return fmt.Sprintf("%d/%d:%.2f", b.Current(), b.Total, b.TimeElapsed().Seconds())
+	})
+	return b
+}
+
+// PrependDesc prepends <processed num>/<total> to the progress bar
+func (b *Bar) PrependDesc(description string) *Bar {
+	b.PrependFunc(func(b *Bar) string {
+		return description
+	})
+	return b
+}
+
+// AppendETA append the eta to the progress bar
+func (b *Bar) AppendETA() *Bar {
+	b.AppendFunc(func(b *Bar) string {
+		elapsedSeconds := b.TimeElapsed().Seconds()
+		//percent := float64(b.Current()) / float64(b.Total)
+		etaSeconds := elapsedSeconds/b.CompletedPercent() - elapsedSeconds
+		day, hour, minute, second := jtime.ResolveTime(int64(etaSeconds))
+		return fmt.Sprintf("ETA:%dD %2dH%2dM%2dS", day, hour, minute, second)
 	})
 	return b
 }
