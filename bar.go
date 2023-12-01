@@ -117,6 +117,38 @@ func (b *Bar) Incr() bool {
 	return true
 }
 
+// Add increments the current value by num, time elapsed to current time and returns true. It returns false if the cursor has reached or exceeds total value.
+func (b *Bar) Add(num int) bool {
+	b.mtx.Lock()
+	defer b.mtx.Unlock()
+
+	n := b.current + num
+	if n > b.Total {
+		return false
+	}
+	var t time.Time
+	if b.TimeStarted == t {
+		b.TimeStarted = time.Now()
+	}
+	b.timeElapsed = time.Since(b.TimeStarted)
+	b.current = n
+	return true
+}
+
+// Finish set the current value to total, time elapsed to current time
+func (b *Bar) Finish() error {
+	b.mtx.Lock()
+	defer b.mtx.Unlock()
+
+	var t time.Time
+	if b.TimeStarted == t {
+		b.TimeStarted = time.Now()
+	}
+	b.timeElapsed = time.Since(b.TimeStarted)
+	b.current = b.Total
+	return nil
+}
+
 // Current returns the current progress of the bar
 func (b *Bar) Current() int {
 	b.mtx.RLock()

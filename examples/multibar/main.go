@@ -13,9 +13,9 @@ func main() {
 
 	//var wg sync.WaitGroup
 	jlog.Info("kkkkktest")
-	bar1 := jprogress.AddDefaultBar(20, "1")
-	bar2 := jprogress.AddDefaultBar(40, "2")
-	bar3 := jprogress.AddDefaultBar(3000, "3")
+	bar1 := jprogress.Default(20, "1")
+	bar2 := jprogress.Default(40, "2")
+	bar3 := jprogress.Default(3000, "3")
 
 	//wg.Add(1)
 	a := jasync.NewAR(3)

@@ -60,8 +60,8 @@ func New() *Progress {
 func AddBar(total int) *Bar {
 	return defaultProgress.AddBar(total)
 }
-func AddDefaultBar(total int, description ...string) *Bar {
-	return defaultProgress.AddDefaultBar(total, description...)
+func Default(total int, description ...string) *Bar {
+	return defaultProgress.Default(total, description...)
 }
 
 // RemoveBar remove bar from progress
@@ -120,7 +120,7 @@ func (p *Progress) AddBar(total int) *Bar {
 }
 
 // AddBar creates a new progress bar and adds to the container
-func (p *Progress) AddDefaultBar(total int, description ...string) *Bar {
+func (p *Progress) Default(total int, description ...string) *Bar {
 	p.mtx.Lock()
 	defer p.mtx.Unlock()
 	bar := NewBar(total)
