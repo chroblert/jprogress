@@ -63,6 +63,9 @@ func AddBar(total int) *Bar {
 func Default(total int, description ...string) *Bar {
 	return defaultProgress.Default(total, description...)
 }
+func Default64(total int64, description ...string) *Bar {
+	return defaultProgress.Default64(total, description...)
+}
 
 // RemoveBar remove bar from progress
 func RemoveBar(bar *Bar) error {
@@ -119,7 +122,7 @@ func (p *Progress) AddBar(total int) *Bar {
 	return bar
 }
 
-// AddBar creates a new progress bar and adds to the container
+// Default creates a new progress bar and adds to the container
 func (p *Progress) Default(total int, description ...string) *Bar {
 	p.mtx.Lock()
 	defer p.mtx.Unlock()
@@ -128,7 +131,22 @@ func (p *Progress) Default(total int, description ...string) *Bar {
 	if len(description) > 0 {
 		bar.PrependCompleted().PrependDesc(description[0]).AppendStr("(").AppendSlashNum().AppendElapsed().AppendStr(":").AppendETA().AppendStr(")")
 	} else {
+		bar.PrependCompleted().PrependDesc("").AppendStr("(").AppendSlashNum().AppendElapsed().AppendStr(":").AppendETA().AppendStr(")")
+	}
+	p.Bars = append(p.Bars, bar)
+	return bar
+}
+
+// Default64 creates a new progress bar and adds to the container
+func (p *Progress) Default64(total int64, description ...string) *Bar {
+	p.mtx.Lock()
+	defer p.mtx.Unlock()
+	bar := NewBar64(total)
+	bar.Width = p.Width
+	if len(description) > 0 {
 		bar.PrependCompleted().PrependDesc(description[0]).AppendStr("(").AppendSlashNum().AppendElapsed().AppendStr(":").AppendETA().AppendStr(")")
+	} else {
+		bar.PrependCompleted().PrependDesc("").AppendStr("(").AppendSlashNum().AppendElapsed().AppendStr(":").AppendETA().AppendStr(")")
 	}
 	p.Bars = append(p.Bars, bar)
 	return bar

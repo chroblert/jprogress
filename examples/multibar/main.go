@@ -20,13 +20,13 @@ func main() {
 	//wg.Add(1)
 	a := jasync.NewAR(3)
 	a.Init("i").CAdd(func(bar *jprogress.Bar) {
-		for i := 0; i < bar.Total; i++ {
+		for i := int64(0); i < bar.Total; i++ {
 			time.Sleep(waitTime)
 			bar.Incr()
 		}
 	}, bar1).CDO()
 	a.Init("2").CAdd(func(bar *jprogress.Bar) {
-		for i := 0; i < bar.Total; i++ {
+		for i := int64(0); i < bar.Total; i++ {
 			time.Sleep(waitTime)
 			if !bar.Incr() {
 			}
@@ -38,7 +38,7 @@ func main() {
 		}
 	}, bar2).CDO()
 	a.Init("3").CAdd(func(bar *jprogress.Bar) {
-		for i := 0; i < bar.Total; i++ {
+		for i := int64(0); i < bar.Total; i++ {
 			time.Sleep(waitTime)
 			if !bar.Incr() {
 				//jlog.Info("删除bar3")

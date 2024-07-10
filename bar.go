@@ -36,7 +36,7 @@ var (
 // Bar represents a progress bar
 type Bar struct {
 	// Total of the total  for the progress bar
-	Total int
+	Total int64
 
 	// LeftEnd is character in the left most part of the progress indicator. Defaults to '['
 	LeftEnd byte
@@ -61,7 +61,7 @@ type Bar struct {
 
 	// timeElased is the time elapsed for the progress
 	timeElapsed time.Duration
-	current     int
+	current     int64
 
 	mtx *sync.RWMutex
 
@@ -74,6 +74,21 @@ type DecoratorFunc func(b *Bar) string
 
 // NewBar returns a new progress bar
 func NewBar(total int) *Bar {
+	return &Bar{
+		Total:    int64(total),
+		Width:    Width,
+		LeftEnd:  LeftEnd,
+		RightEnd: RightEnd,
+		Head:     Head,
+		Fill:     Fill,
+		Empty:    Empty,
+
+		mtx: &sync.RWMutex{},
+	}
+}
+
+// NewBar64 returns a new progress bar
+func NewBar64(total int64) *Bar {
 	return &Bar{
 		Total:    total,
 		Width:    Width,
@@ -89,6 +104,18 @@ func NewBar(total int) *Bar {
 
 // Set the current count of the bar. It returns ErrMaxCurrentReached when trying n exceeds the total value. This is atomic operation and concurrency safe.
 func (b *Bar) Set(n int) error {
+	b.mtx.Lock()
+	defer b.mtx.Unlock()
+
+	if int64(n) > b.Total {
+		return ErrMaxCurrentReached
+	}
+	b.current = int64(n)
+	return nil
+}
+
+// Set64 the current count of the bar. It returns ErrMaxCurrentReached when trying n exceeds the total value. This is atomic operation and concurrency safe.
+func (b *Bar) Set64(n int64) error {
 	b.mtx.Lock()
 	defer b.mtx.Unlock()
 
@@ -122,6 +149,24 @@ func (b *Bar) Add(num int) bool {
 	b.mtx.Lock()
 	defer b.mtx.Unlock()
 
+	n := b.current + int64(num)
+	if n > b.Total {
+		return false
+	}
+	var t time.Time
+	if b.TimeStarted == t {
+		b.TimeStarted = time.Now()
+	}
+	b.timeElapsed = time.Since(b.TimeStarted)
+	b.current = n
+	return true
+}
+
+// Add64 increments the current value by num, time elapsed to current time and returns true. It returns false if the cursor has reached or exceeds total value.
+func (b *Bar) Add64(num int64) bool {
+	b.mtx.Lock()
+	defer b.mtx.Unlock()
+
 	n := b.current + num
 	if n > b.Total {
 		return false
@@ -149,11 +194,18 @@ func (b *Bar) Finish() error {
 	return nil
 }
 
+// Current64 returns the current progress of the bar
+func (b *Bar) Current64() int64 {
+	b.mtx.RLock()
+	defer b.mtx.RUnlock()
+	return b.current
+}
+
 // Current returns the current progress of the bar
 func (b *Bar) Current() int {
 	b.mtx.RLock()
 	defer b.mtx.RUnlock()
-	return b.current
+	return int(b.current)
 }
 
 // AppendFunc runs the decorator function and renders the output on the right of the progress bar
@@ -199,7 +251,7 @@ func (b *Bar) PrependCompleted() *Bar {
 // PrependSlashNum prepends <processed num>/<total> to the progress bar
 func (b *Bar) PrependSlashNum() *Bar {
 	b.PrependFunc(func(b *Bar) string {
-		return fmt.Sprintf("%d/%d:%.2f", b.Current(), b.Total, b.TimeElapsed().Seconds())
+		return fmt.Sprintf("%d/%d:%.2f", b.Current64(), b.Total, b.TimeElapsed().Seconds())
 	})
 	return b
 }
@@ -207,7 +259,7 @@ func (b *Bar) PrependSlashNum() *Bar {
 // AppendSlashNum append <processed num>/<total> to the progress bar
 func (b *Bar) AppendSlashNum() *Bar {
 	b.AppendFunc(func(b *Bar) string {
-		return strutil.PadLeft(fmt.Sprintf("%d/%d", b.Current(), b.Total), 10, ' ')
+		return strutil.PadLeft(fmt.Sprintf("%d/%d", b.Current64(), b.Total), 10, ' ')
 	})
 	return b
 }
@@ -240,7 +292,7 @@ func (b *Bar) PrependDesc(description string) *Bar {
 func (b *Bar) AppendETA() *Bar {
 	b.AppendFunc(func(b *Bar) string {
 		elapsedSeconds := b.TimeElapsed().Seconds()
-		etaSeconds := elapsedSeconds/(float64(b.Current())/float64(b.Total)) - elapsedSeconds
+		etaSeconds := elapsedSeconds/(float64(b.Current64())/float64(b.Total)) - elapsedSeconds
 		return strutil.PrettyTime(time.Duration(etaSeconds) * time.Second)
 	})
 	return b
@@ -298,12 +350,12 @@ func (b *Bar) String() string {
 
 // CompletedPercent return the percent completed
 func (b *Bar) CompletedPercent() float64 {
-	return (float64(b.Current()) / float64(b.Total)) * 100.00
+	return (float64(b.Current64()) / float64(b.Total)) * 100.00
 }
 
 // CompletedPercent return the percent completed
 func (b *Bar) IsComplete() bool {
-	return b.Current() == b.Total
+	return b.Current64() == b.Total
 }
 
 // CompletedPercentString returns the formatted string representation of the completed percent

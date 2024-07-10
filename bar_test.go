@@ -31,7 +31,7 @@ func TestBarIncr(t *testing.T) {
 		}()
 	}
 	wg.Wait()
-	if b.Current() != 10000 {
-		t.Fatal("need", 10000, "got", b.Current())
+	if b.Current64() != 10000 {
+		t.Fatal("need", 10000, "got", b.Current64())
 	}
 }
