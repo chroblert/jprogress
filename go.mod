@@ -1,14 +1,14 @@
 module github.com/chroblert/jprogress
 
-go 1.21.3
+go 1.16
 
 require (
-	github.com/chroblert/jasync v0.1.4
+	github.com/chroblert/jasync v0.1.6
 	github.com/gosuri/uilive v0.0.4
 )
 
 require (
-	github.com/chroblert/jlog v0.0.9 // indirect
+	github.com/chroblert/jlog v0.1.8
 	github.com/hashicorp/go-uuid v1.0.3 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
