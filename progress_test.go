@@ -3,6 +3,7 @@ package jprogress
 import (
 	"bytes"
 	"fmt"
+	"github.com/chroblert/jlog"
 	"strings"
 	"sync"
 	"testing"
@@ -42,4 +43,19 @@ func TestStoppingPrintout(t *testing.T) {
 	if !strings.HasSuffix(buffer.String(), wantSuffix) {
 		t.Errorf("Content that should be printed after stop not appearing on buffer.")
 	}
+}
+
+func TestSize0Bar(t *testing.T) {
+	t.Run("size 0 bar", func(t *testing.T) {
+		jp := New()
+		jp.Start()
+		defer jp.Stop()
+		bar := jp.Default64(0, "size 0")
+		for _, v := range []string{"1", "2", "3"} {
+			bar.Add(1)
+			time.Sleep(5 * time.Second)
+			jlog.Debug(v)
+		}
+
+	})
 }

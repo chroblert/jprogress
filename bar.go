@@ -132,9 +132,9 @@ func (b *Bar) Incr() bool {
 	defer b.mtx.Unlock()
 
 	n := b.current + 1
-	if n > b.Total {
-		return false
-	}
+	//if n > b.Total {
+	//	return false
+	//}
 	var t time.Time
 	if b.TimeStarted == t {
 		b.TimeStarted = time.Now()
@@ -150,9 +150,9 @@ func (b *Bar) Add(num int) bool {
 	defer b.mtx.Unlock()
 
 	n := b.current + int64(num)
-	if n > b.Total {
-		return false
-	}
+	//if n > b.Total {
+	//	return false
+	//}
 	var t time.Time
 	if b.TimeStarted == t {
 		b.TimeStarted = time.Now()
@@ -168,9 +168,9 @@ func (b *Bar) Add64(num int64) bool {
 	defer b.mtx.Unlock()
 
 	n := b.current + num
-	if n > b.Total {
-		return false
-	}
+	//if n > b.Total {
+	//	return false
+	//}
 	var t time.Time
 	if b.TimeStarted == t {
 		b.TimeStarted = time.Now()
@@ -292,7 +292,10 @@ func (b *Bar) PrependDesc(description string) *Bar {
 func (b *Bar) AppendETA() *Bar {
 	b.AppendFunc(func(b *Bar) string {
 		elapsedSeconds := b.TimeElapsed().Seconds()
-		etaSeconds := elapsedSeconds/(float64(b.Current64())/float64(b.Total)) - elapsedSeconds
+		var etaSeconds float64 = 0
+		if b.Total > 0 {
+			etaSeconds = elapsedSeconds/(float64(b.Current64())/float64(b.Total)) - elapsedSeconds
+		}
 		return strutil.PrettyTime(time.Duration(etaSeconds) * time.Second)
 	})
 	return b
@@ -350,7 +353,11 @@ func (b *Bar) String() string {
 
 // CompletedPercent return the percent completed
 func (b *Bar) CompletedPercent() float64 {
-	return (float64(b.Current64()) / float64(b.Total)) * 100.00
+	if b.Total > 0 {
+		return (float64(b.Current64()) / float64(b.Total)) * 100.00
+	} else {
+		return 0 * 100.00
+	}
 }
 
 // CompletedPercent return the percent completed
