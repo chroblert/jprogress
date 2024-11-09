@@ -176,6 +176,11 @@ func (p *Progress) print() {
 	defer p.mtx.Unlock()
 	//dDel := -1
 	for _, bar := range p.Bars {
+		var t time.Time
+		if bar.TimeStarted == t {
+			bar.TimeStarted = time.Now()
+		}
+		bar.timeElapsed = time.Since(bar.TimeStarted)
 		fmt.Fprintln(p.lw, bar.String())
 		//if bar.current == bar.Total {
 		//	dDel = k

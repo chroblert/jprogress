@@ -135,11 +135,11 @@ func (b *Bar) Incr() bool {
 	//if n > b.Total {
 	//	return false
 	//}
-	var t time.Time
-	if b.TimeStarted == t {
-		b.TimeStarted = time.Now()
-	}
-	b.timeElapsed = time.Since(b.TimeStarted)
+	//var t time.Time
+	//if b.TimeStarted == t {
+	//	b.TimeStarted = time.Now()
+	//}
+	//b.timeElapsed = time.Since(b.TimeStarted)
 	b.current = n
 	return true
 }
@@ -153,11 +153,11 @@ func (b *Bar) Add(num int) bool {
 	//if n > b.Total {
 	//	return false
 	//}
-	var t time.Time
-	if b.TimeStarted == t {
-		b.TimeStarted = time.Now()
-	}
-	b.timeElapsed = time.Since(b.TimeStarted)
+	//var t time.Time
+	//if b.TimeStarted == t {
+	//	b.TimeStarted = time.Now()
+	//}
+	//b.timeElapsed = time.Since(b.TimeStarted)
 	b.current = n
 	return true
 }
@@ -171,11 +171,11 @@ func (b *Bar) Add64(num int64) bool {
 	//if n > b.Total {
 	//	return false
 	//}
-	var t time.Time
-	if b.TimeStarted == t {
-		b.TimeStarted = time.Now()
-	}
-	b.timeElapsed = time.Since(b.TimeStarted)
+	//var t time.Time
+	//if b.TimeStarted == t {
+	//	b.TimeStarted = time.Now()
+	//}
+	//b.timeElapsed = time.Since(b.TimeStarted)
 	b.current = n
 	return true
 }
@@ -185,11 +185,11 @@ func (b *Bar) Finish() error {
 	b.mtx.Lock()
 	defer b.mtx.Unlock()
 
-	var t time.Time
-	if b.TimeStarted == t {
-		b.TimeStarted = time.Now()
-	}
-	b.timeElapsed = time.Since(b.TimeStarted)
+	//var t time.Time
+	//if b.TimeStarted == t {
+	//	b.TimeStarted = time.Now()
+	//}
+	//b.timeElapsed = time.Since(b.TimeStarted)
 	b.current = b.Total
 	return nil
 }
@@ -296,6 +296,9 @@ func (b *Bar) AppendETA() *Bar {
 		if b.Total > 0 {
 			etaSeconds = elapsedSeconds/(float64(b.Current64())/float64(b.Total)) - elapsedSeconds
 		}
+		if etaSeconds < 0 {
+			etaSeconds = 0
+		}
 		return strutil.PrettyTime(time.Duration(etaSeconds) * time.Second)
 	})
 	return b
@@ -311,7 +314,12 @@ func (b *Bar) PrependElapsed() *Bar {
 
 // Bytes returns the byte presentation of the progress bar
 func (b *Bar) Bytes() []byte {
-	completedWidth := int(float64(b.Width) * (b.CompletedPercent() / 100.00))
+	var completedWidth int
+	if b.CompletedPercent() > 100 {
+		completedWidth = int(b.Width)
+	} else {
+		completedWidth = int(float64(b.Width) * (b.CompletedPercent() / 100.00))
+	}
 
 	// add fill and empty bits
 	var buf bytes.Buffer
@@ -356,7 +364,7 @@ func (b *Bar) CompletedPercent() float64 {
 	if b.Total > 0 {
 		return (float64(b.Current64()) / float64(b.Total)) * 100.00
 	} else {
-		return 0 * 100.00
+		return 100.00
 	}
 }
 
