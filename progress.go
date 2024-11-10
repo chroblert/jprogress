@@ -2,6 +2,7 @@ package jprogress
 
 import (
 	"fmt"
+	"github.com/chroblert/jlog"
 	"io"
 	"os"
 	"sync"
@@ -154,6 +155,7 @@ func (p *Progress) Default64(total int64, description ...string) *Bar {
 
 // Listen listens for updates and renders the progress bars
 func (p *Progress) Listen() {
+	p.tdone = make(chan bool)
 	for {
 
 		p.mtx.Lock()
@@ -203,6 +205,11 @@ func (p *Progress) Start() {
 
 // Stop stops listening
 func (p *Progress) Stop() {
+	defer func() {
+		if err := recover(); err != nil {
+			jlog.Error("err in stop:", err)
+		}
+	}()
 	p.tdone <- true
 	<-p.tdone
 }

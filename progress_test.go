@@ -58,4 +58,55 @@ func TestSize0Bar(t *testing.T) {
 		}
 
 	})
+
+	t.Run("stop后start", func(t *testing.T) {
+		Start()
+		bar := Default64(10, "bar1")
+		for k := 0; k < 10; k++ {
+			time.Sleep(10 * time.Millisecond)
+			bar.Add(1)
+		}
+		Stop()
+		bar.Set(9)
+		bar.Incr()
+		Start()
+		bar2 := Default64(12, "bar2")
+		for k := 0; k < 10; k++ {
+			time.Sleep(10 * time.Millisecond)
+			bar2.Add(1)
+		}
+		jlog.Debug("before stop in bar1 x")
+		Stop()
+	})
+	t.Run("remove bar", func(t *testing.T) {
+		Start()
+		bar := Default64(10, "bar1")
+		for k := 0; k < 10; k++ {
+			time.Sleep(10 * time.Millisecond)
+			bar.Add(1)
+		}
+		Stop()
+		Stop()
+		Start()
+		bar2 := Default64(12, "bar2")
+		for k := 0; k < 12; k++ {
+			time.Sleep(10 * time.Millisecond)
+			if k > 5 {
+				RemoveBar(bar)
+			}
+			bar2.Add(1)
+		}
+	})
+	t.Run("sleep", func(t *testing.T) {
+		Start()
+		bar := Default64(10, "bar1")
+		for k := 0; k < 10; k++ {
+			//time.Sleep(10 * time.Millisecond)
+			bar.Add(1)
+			jlog.Debug(k)
+			time.Sleep(20 * time.Second)
+		}
+		bar.Finish()
+		Stop()
+	})
 }
